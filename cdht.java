@@ -38,6 +38,7 @@ public class cdht
                if(s.contains("quit")){
                   system.tcpQuit(1, system);
                   system.tcpQuit(2, system);
+                  System.exit(0);
                }
             }
          }
@@ -61,7 +62,6 @@ public class cdht
 				   } catch (IOException e) {	
 					   e.printStackTrace();
 				   }
-		          System.out.println("connection from " + connectionSocket);
 		          // create read stream to get input
 		          BufferedReader inFromClient = null;
 				   try {
@@ -83,9 +83,15 @@ public class cdht
                   if(system.getPeer().getFirstChild() == port){
                      system.getPeer().setFirstChild(firstSuccess);
                      system.getPeer().setSecondChild(secondSuccess);
+                     System.out.println("Peer " + (port - 50000) + " will depart from the network.");
+                     System.out.println("My first successor is now peer " + (system.getPeer().getFirstChild() - 50000));
+                     System.out.println("My second successor is now peer " + (system.getPeer().getSecondChild() - 50000));
                   }
                   else if(system.getPeer().getSecondChild() == port){
                      system.getPeer().setSecondChild(firstSuccess);
+                     System.out.println("Peer " + (port - 50000) + " will depart from the network.");
+                     System.out.println("My first successor is now peer " + (system.getPeer().getFirstChild() - 50000));
+                     System.out.println("My second successor is now peer " + (system.getPeer().getSecondChild() - 50000));
                   }
                }
 		         DataOutputStream outToClient = null;
@@ -173,7 +179,6 @@ public class cdht
                ping = new DatagramPacket(buf, buf.length, server, system.getPeer().getFirstChild());
                try {
 				      socket.send(ping);
-System.out.println("pinging " + system.getPeer().getFirstChild());
 			      } catch (IOException e) {
 				      e.printStackTrace();
 			      }
@@ -206,7 +211,6 @@ System.out.println("pinging " + system.getPeer().getFirstChild());
             while(true) {
                ping = new DatagramPacket(buf, buf.length, server, system.getPeer().getSecondChild());
                try {
-System.out.println("Pinging " + system.getPeer().getSecondChild());
 				      socket.send(ping);
 			      } catch (IOException e) {
 				      e.printStackTrace();
@@ -278,7 +282,6 @@ System.out.println("Pinging " + system.getPeer().getSecondChild());
       // close client socket
       try {
 		   clientSocket.close();
-         System.exit(0);
 	   } catch (IOException e) {
 		   e.printStackTrace();
 	   }   
