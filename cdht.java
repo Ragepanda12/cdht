@@ -36,8 +36,8 @@ public class cdht
                Scanner sc = new Scanner(System.in);
                String s = sc.nextLine();
                if(s.contains("quit")){
-                  system.tcpSend(1, system);
-                  system.tcpSend(2, system);
+                  system.tcpQuit(1, system);
+                  system.tcpQuit(2, system);
                }
             }
          }
@@ -80,12 +80,9 @@ public class cdht
                   int firstSuccess = Integer.parseInt(clientSentence.split(" ")[1]);
                   int secondSuccess = Integer.parseInt(clientSentence.split(" ")[2]);
                   int port = Integer.parseInt(clientSentence.split(" ")[3]);
-System.out.println("Original: " + system.getPeer().getFirstChild() + " " + system.getPeer().getSecondChild());
-System.out.println("Comparison " + firstSuccess + " " + secondSuccess);
                   if(system.getPeer().getFirstChild() == port){
                      system.getPeer().setFirstChild(firstSuccess);
                      system.getPeer().setSecondChild(secondSuccess);
-                     
                   }
                   else if(system.getPeer().getSecondChild() == port){
                      system.getPeer().setSecondChild(firstSuccess);
@@ -228,7 +225,7 @@ System.out.println("Pinging " + system.getPeer().getSecondChild());
       tcpServer.start();
       inputListen.start();
    }
-   private void tcpSend(int server, cdht system){
+   private void tcpQuit(int server, cdht system){
       String serverName = "localhost";
 		InetAddress serverIPAddress = null;
       try {
@@ -239,10 +236,10 @@ System.out.println("Pinging " + system.getPeer().getSecondChild());
       // get server port
       int serverPort;
       if(server == 1){
-         serverPort = system.getPeer().getFirstChild();
+         serverPort = system.getPeer().getFirstPredecessor();
       }
       else{
-         serverPort = system.getPeer().getSecondChild();
+         serverPort = system.getPeer().getSecondPredecessor();
       } 
       // create socket which connects to server
       Socket clientSocket = null;
@@ -281,6 +278,7 @@ System.out.println("Pinging " + system.getPeer().getSecondChild());
       // close client socket
       try {
 		   clientSocket.close();
+         System.exit(0);
 	   } catch (IOException e) {
 		   e.printStackTrace();
 	   }   
