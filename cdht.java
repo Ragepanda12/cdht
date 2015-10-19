@@ -18,6 +18,10 @@ public class cdht
    public Peer getPeer(){
 	   return p;
    }
+
+   private void tcpFile(int requestNo, cdht system){
+
+   }
    public static void main(String[] args) throws Exception{
       // Get command line argument.
       if (args.length != 3) {
@@ -39,6 +43,10 @@ public class cdht
                   system.tcpQuit(1, system);
                   system.tcpQuit(2, system);
                   System.exit(0);
+               }
+               else if(s.contains("request")){
+                  int requestNo = ((Integer.parseInt(s.split(" ")[1]) + 1) % 255);
+                  system.tcpFile(requestNo, system);
                }
             }
          }
@@ -83,15 +91,15 @@ public class cdht
                   if(system.getPeer().getFirstChild() == port){
                      system.getPeer().setFirstChild(firstSuccess);
                      system.getPeer().setSecondChild(secondSuccess);
-                     System.out.println("Peer " + (port - 50000) + " will depart from the network.");
-                     System.out.println("My first successor is now peer " + (system.getPeer().getFirstChild() - 50000));
-                     System.out.println("My second successor is now peer " + (system.getPeer().getSecondChild() - 50000));
+                     System.out.println("Peer " + (port - portPlus) + " will depart from the network.");
+                     System.out.println("My first successor is now peer " + (system.getPeer().getFirstChild() - portPlus));
+                     System.out.println("My second successor is now peer " + (system.getPeer().getSecondChild() - portPlus));
                   }
                   else if(system.getPeer().getSecondChild() == port){
                      system.getPeer().setSecondChild(firstSuccess);
-                     System.out.println("Peer " + (port - 50000) + " will depart from the network.");
-                     System.out.println("My first successor is now peer " + (system.getPeer().getFirstChild() - 50000));
-                     System.out.println("My second successor is now peer " + (system.getPeer().getSecondChild() - 50000));
+                     System.out.println("Peer " + (port - portPlus) + " will depart from the network.");
+                     System.out.println("My first successor is now peer " + (system.getPeer().getFirstChild() - portPlus));
+                     System.out.println("My second successor is now peer " + (system.getPeer().getSecondChild() - portPlus));
                   }
                }
 		         DataOutputStream outToClient = null;
@@ -183,7 +191,7 @@ public class cdht
 				      e.printStackTrace();
 			      }
                try {
-				      Thread.sleep(5000);
+				      Thread.sleep(2000);
 			      } catch (InterruptedException e) {
 				      e.printStackTrace();
 			      }
