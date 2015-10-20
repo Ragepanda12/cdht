@@ -19,7 +19,7 @@ public class cdht
 	   return p;
    }
 
-   private void notifyTcpFile(int requester, int request){
+   private void haveTCPFile(int requester, int originalReq, cdht system){
       String serverName = "localhost";
 		InetAddress serverIPAddress = null;
       try {
@@ -27,13 +27,34 @@ public class cdht
 	   } catch (UnknownHostException e) {
 		   e.printStackTrace();
 	   }
+      // get server port
+      int serverPort = requester + portPlus;
       // create socket which connects to server
       Socket clientSocket = null;
 	   try {
-	      clientSocket = new Socket(serverIPAddress, requester);
+	      clientSocket = new Socket(serverIPAddress, serverPort);
 	   } catch (IOException e) {
 		   e.printStackTrace();
-	   }      
+	   }
+      String sentence = "file " + originalReq + " " + (system.getPeer().getPort()-portPlus);
+		// write to server
+      DataOutputStream outToServer = null;
+	   try {
+		   outToServer = new DataOutputStream(clientSocket.getOutputStream());
+	   } catch (IOException e) {		
+			e.printStackTrace();
+	   }
+      try {
+		   outToServer.writeBytes(sentence + '\n');
+	   } catch (IOException e) {					
+         e.printStackTrace();
+	   }
+      // close client socket
+      try {
+		   clientSocket.close();
+	   } catch (IOException e) {
+		   e.printStackTrace();
+	   }        
    }
 
    private void tcpFile(int request, int firstRequester, cdht system){
@@ -53,7 +74,6 @@ public class cdht
 	   } catch (IOException e) {
 		   e.printStackTrace();
 	   }
-		System.out.println("File request message for " + request + " has been sent to my successor");
       String sentence = "request " + request + " " + firstRequester;
 		// write to server
       DataOutputStream outToServer = null;
@@ -73,14 +93,7 @@ public class cdht
 		   inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 	   } catch (IOException e) {	
          e.printStackTrace();
-	   }
-      String sentenceFromServer;
-      try {
-		   sentenceFromServer = inFromServer.readLine();
-	   } catch (IOException e) {						
-			e.printStackTrace();
-	   }
-      
+	   }    
       // close client socket
       try {
 		   clientSocket.close();
@@ -114,6 +127,7 @@ public class cdht
                }
                else if(s.contains("request")){
                   int requestNo = Integer.parseInt(s.split(" ")[1]);
+                  System.out.println("File request message for " + requestNo + " has been sent to my successor");
                   system.tcpFile(requestNo, (system.getPeer().getPort() - portPlus), system);
                }
             }
@@ -183,27 +197,22 @@ public class cdht
 	   			   }
                }
                else if(clientSentence.contains("request")){
-            	   DataOutputStream outToClient = null;
                   int originalReq = (Integer.parseInt(clientSentence.split(" ")[1]));
                   int request = ((originalReq + 1)%256);
                   int requester = (Integer.parseInt(clientSentence.split(" ")[2]));
                   if(system.getPeer().getFirstChild() < system.getPeer().getPort() || (system.getPeer().getPort() - portPlus) == request){
                      System.out.println("File " + originalReq + " is here.");
-                     try {
-	      				   outToClient = new DataOutputStream(connectionSocket.getOutputStream());
-	      			   } catch (IOException e) {
-	      				   e.printStackTrace();
-	      			   }
-	      	         try {
-                        String reply = "peer " + (system.getPeer().getPort() - portPlus) + "\n";
-	      				   outToClient.writeBytes(reply);
-	      			   } catch (IOException e) {	
-	      				   e.printStackTrace();
-	      			   }
+                     System.out.println("A response message, destined for peer " + requester + ", has been sent.");
+                     system.haveTCPFile(requester, originalReq, system);
                   }
                   else{
+                     System.out.println("File " + originalReq + " is not stored here.");
+                     System.out.println("File request message has been forwarded to my successor.");
                      system.tcpFile(originalReq, requester, system);
                   }
+               }
+               else if(clientSentence.contains("file")){
+                  System.out.println("Received a response message from peer " + clientSentence.split(" ")[2] + ", which has the file " + clientSentence.split(" ")[1]);
                }
 		      } // end of while (true)
          }
@@ -315,7 +324,7 @@ public class cdht
 				      e.printStackTrace();
 			      }
                try {
-				      Thread.sleep(5000);
+				      Thread.sleep(2000);
 			      } catch (InterruptedException e) {
 				      e.printStackTrace();
 			      }
