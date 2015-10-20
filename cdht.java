@@ -66,7 +66,7 @@ public class cdht
 		   e.printStackTrace();
 	   }
       // get server port
-      int serverPort = system.getPeer().getFirstPredecessor();
+      int serverPort = system.getPeer().getFirstChild();
       // create socket which connects to server
       Socket clientSocket = null;
 	   try {
@@ -86,14 +86,7 @@ public class cdht
 		   outToServer.writeBytes(sentence + '\n');
 	   } catch (IOException e) {					
          e.printStackTrace();
-	   }
-		// create read stream and receive from server
-	   BufferedReader inFromServer = null;
-	   try {
-		   inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-	   } catch (IOException e) {	
-         e.printStackTrace();
-	   }    
+	   }  
       // close client socket
       try {
 		   clientSocket.close();
@@ -200,7 +193,7 @@ public class cdht
                   int originalReq = (Integer.parseInt(clientSentence.split(" ")[1]));
                   int request = ((originalReq + 1)%256);
                   int requester = (Integer.parseInt(clientSentence.split(" ")[2]));
-                  if(system.getPeer().getFirstChild() < system.getPeer().getPort() || (system.getPeer().getPort() - portPlus) == request){
+                  if((system.getPeer().getPort() - portPlus) == request){
                      System.out.println("File " + originalReq + " is here.");
                      System.out.println("A response message, destined for peer " + requester + ", has been sent.");
                      system.haveTCPFile(requester, originalReq, system);
