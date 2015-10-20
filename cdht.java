@@ -19,7 +19,75 @@ public class cdht
 	   return p;
    }
 
-   private void tcpFile(int requestNo, cdht system){
+   private void notifyTcpFile(int requester, int request){
+      String serverName = "localhost";
+		InetAddress serverIPAddress = null;
+      try {
+		   serverIPAddress = InetAddress.getByName(serverName);
+	   } catch (UnknownHostException e) {
+		   e.printStackTrace();
+	   }
+      // create socket which connects to server
+      Socket clientSocket = null;
+	   try {
+	      clientSocket = new Socket(serverIPAddress, requester);
+	   } catch (IOException e) {
+		   e.printStackTrace();
+	   }      
+   }
+
+   private void tcpFile(int request, int firstRequester, cdht system){
+      String serverName = "localhost";
+		InetAddress serverIPAddress = null;
+      try {
+		   serverIPAddress = InetAddress.getByName(serverName);
+	   } catch (UnknownHostException e) {
+		   e.printStackTrace();
+	   }
+      // get server port
+      int serverPort = system.getPeer().getFirstPredecessor();
+      // create socket which connects to server
+      Socket clientSocket = null;
+	   try {
+	      clientSocket = new Socket(serverIPAddress, serverPort);
+	   } catch (IOException e) {
+		   e.printStackTrace();
+	   }
+		System.out.println("File request message for " + request + " has been sent to my successor");
+      String sentence = "request " + request + " " + firstRequester;
+		// write to server
+      DataOutputStream outToServer = null;
+	   try {
+		   outToServer = new DataOutputStream(clientSocket.getOutputStream());
+	   } catch (IOException e) {		
+			e.printStackTrace();
+	   }
+      try {
+		   outToServer.writeBytes(sentence + '\n');
+	   } catch (IOException e) {					
+         e.printStackTrace();
+	   }
+		// create read stream and receive from server
+	   BufferedReader inFromServer = null;
+	   try {
+		   inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+	   } catch (IOException e) {	
+         e.printStackTrace();
+	   }
+      String sentenceFromServer;
+      try {
+		   sentenceFromServer = inFromServer.readLine();
+	   } catch (IOException e) {						
+			e.printStackTrace();
+	   }
+      
+      // close client socket
+      try {
+		   clientSocket.close();
+	   } catch (IOException e) {
+		   e.printStackTrace();
+	   }   
+
 
    }
    public static void main(String[] args) throws Exception{
@@ -45,8 +113,8 @@ public class cdht
                   System.exit(0);
                }
                else if(s.contains("request")){
-                  int requestNo = ((Integer.parseInt(s.split(" ")[1]) + 1) % 255);
-                  system.tcpFile(requestNo, system);
+                  int requestNo = Integer.parseInt(s.split(" ")[1]);
+                  system.tcpFile(requestNo, (system.getPeer().getPort() - portPlus), system);
                }
             }
          }
@@ -85,6 +153,7 @@ public class cdht
 				   }
 		          // send reply
                if(clientSentence.contains("quitting")){
+            	  DataOutputStream outToClient = null;
                   int firstSuccess = Integer.parseInt(clientSentence.split(" ")[1]);
                   int secondSuccess = Integer.parseInt(clientSentence.split(" ")[2]);
                   int port = Integer.parseInt(clientSentence.split(" ")[3]);
@@ -101,19 +170,41 @@ public class cdht
                      System.out.println("My first successor is now peer " + (system.getPeer().getFirstChild() - portPlus));
                      System.out.println("My second successor is now peer " + (system.getPeer().getSecondChild() - portPlus));
                   }
+   				   try {
+	   				   outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+	   			   } catch (IOException e) {
+	   				   e.printStackTrace();
+	   			   }
+	   	         try {
+                     String reply = "disconnect ok \n";
+	   				   outToClient.writeBytes(reply);
+	   			   } catch (IOException e) {	
+	   				   e.printStackTrace();
+	   			   }
                }
-		         DataOutputStream outToClient = null;
-				   try {
-					   outToClient = new DataOutputStream(connectionSocket.getOutputStream());
-				   } catch (IOException e) {
-					   e.printStackTrace();
-				   }
-		         try {
-                  String reply = "disconnect ok \n";
-					   outToClient.writeBytes(reply);
-				   } catch (IOException e) {	
-					   e.printStackTrace();
-				   }
+               else if(clientSentence.contains("request")){
+            	   DataOutputStream outToClient = null;
+                  int originalReq = (Integer.parseInt(clientSentence.split(" ")[1]));
+                  int request = ((originalReq + 1)%256);
+                  int requester = (Integer.parseInt(clientSentence.split(" ")[2]));
+                  if(system.getPeer().getFirstChild() < system.getPeer().getPort() || (system.getPeer().getPort() - portPlus) == request){
+                     System.out.println("File " + originalReq + " is here.");
+                     try {
+	      				   outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+	      			   } catch (IOException e) {
+	      				   e.printStackTrace();
+	      			   }
+	      	         try {
+                        String reply = "peer " + (system.getPeer().getPort() - portPlus) + "\n";
+	      				   outToClient.writeBytes(reply);
+	      			   } catch (IOException e) {	
+	      				   e.printStackTrace();
+	      			   }
+                  }
+                  else{
+                     system.tcpFile(originalReq, requester, system);
+                  }
+               }
 		      } // end of while (true)
          }
       });

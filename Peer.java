@@ -1,5 +1,4 @@
 public class Peer {
-	private int self;
 	private int firstChild;
 	private int secondChild;
    private int firstPredecessor;
@@ -8,7 +7,6 @@ public class Peer {
 	private final int addPort = 50000;
 
 	public Peer(int identity){
-		self = identity;
 		port = identity + addPort;
 	}
 	public void setFirstChild(int child){
