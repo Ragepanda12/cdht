@@ -193,7 +193,7 @@ public class cdht
                   int originalReq = (Integer.parseInt(clientSentence.split(" ")[1]));
                   int request = ((originalReq + 1)%256);
                   int requester = (Integer.parseInt(clientSentence.split(" ")[2]));
-                  if((system.getPeer().getPort() - portPlus) == request){
+                  if((((system.getPeer().getPort() - portPlus) < request) && (system.getPeer().getFirstChild() > request) || (((system.getPeer().getPort() - portPlus) < request) && (system.getPeer().getFirstChild() < (system.getPeer().getPort() - portPlus))))){
                      System.out.println("File " + originalReq + " is here.");
                      System.out.println("A response message, destined for peer " + requester + ", has been sent.");
                      system.haveTCPFile(requester, originalReq, system);
