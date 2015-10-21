@@ -190,10 +190,26 @@ public class cdht
 	   			   }
                }
                else if(clientSentence.contains("request")){
-                  int originalReq = (Integer.parseInt(clientSentence.split(" ")[1]));
-                  int request = ((originalReq + 1)%256);
+                  int originalReq = (Integer.parseInt(clientSentence.split(" ")[1]) );
+                  int request = ((originalReq)%256);
                   int requester = (Integer.parseInt(clientSentence.split(" ")[2]));
-                  if((((system.getPeer().getPort() - portPlus) < request) && (system.getPeer().getFirstChild() > request) || (((system.getPeer().getPort() - portPlus) < request) && (system.getPeer().getFirstChild() < (system.getPeer().getPort() - portPlus))))){
+                  if((((system.getPeer().getPort() - portPlus) < request) && ((system.getPeer().getFirstChild() - portPlus) > request))){
+System.out.println(request + " " + (system.getPeer().getPort() - portPlus) + " " + (system.getPeer().getFirstChild() - portPlus));
+System.out.println("It is greater than me but not my child");
+                     System.out.println("File " + originalReq + " is here.");
+                     System.out.println("A response message, destined for peer " + requester + ", has been sent.");
+                     system.haveTCPFile(requester, originalReq, system);
+                  }
+                  else if((((system.getPeer().getPort() - portPlus) < request) && ((system.getPeer().getFirstChild() - portPlus) < (system.getPeer().getPort() - portPlus)))){
+System.out.println(request + " " + (system.getPeer().getPort() - portPlus) + " " + (system.getPeer().getFirstChild() - portPlus));
+System.out.println("It is greater than me but i'm greater than my child");
+                     System.out.println("File " + originalReq + " is here.");
+                     System.out.println("A response message, destined for peer " + requester + ", has been sent.");
+                     system.haveTCPFile(requester, originalReq, system);
+                  }
+                  else if((system.getPeer().getPort() - portPlus) == request){
+System.out.println(request + " " + (system.getPeer().getPort() - portPlus) + " " + (system.getPeer().getFirstChild() - portPlus));
+System.out.println("I'm equal to it.");
                      System.out.println("File " + originalReq + " is here.");
                      System.out.println("A response message, destined for peer " + requester + ", has been sent.");
                      system.haveTCPFile(requester, originalReq, system);
